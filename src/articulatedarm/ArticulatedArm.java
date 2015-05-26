@@ -116,7 +116,7 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
         TransformGroup robot = new TransformGroup();
         robot.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
         
-        Cylinder podstawa = new Cylinder(1.2f, 0.01f, wyglad2);
+        Cylinder podstawa = new Cylinder(2.0f, 0.01f, wyglad2);
         TransformGroup trans_podstawa = new TransformGroup();
         trans_podstawa.addChild(podstawa);       
         scena.addChild(trans_podstawa);
