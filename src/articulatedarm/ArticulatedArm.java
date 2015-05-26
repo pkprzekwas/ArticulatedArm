@@ -3,9 +3,11 @@ package articulatedarm;
 
 import com.sun.j3d.utils.applet.MainFrame;
 import com.sun.j3d.utils.behaviors.mouse.MouseWheelZoom;
+import com.sun.j3d.utils.behaviors.vp.OrbitBehavior;
 import com.sun.j3d.utils.geometry.Box;
 import com.sun.j3d.utils.geometry.Cylinder;
 import com.sun.j3d.utils.universe.SimpleUniverse;
+import com.sun.j3d.utils.universe.ViewingPlatform;
 import java.applet.Applet;
 import java.awt.BorderLayout;
 import java.awt.Button;
@@ -28,7 +30,7 @@ import javax.media.j3d.TransformGroup;
 import javax.vecmath.Color3f;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3f;
-//chuj
+
 /**
  *
 // * @author Patryk and Kuba
@@ -75,9 +77,14 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
         
         
         SimpleUniverse uni = new SimpleUniverse(canvas);
-        
+               //sterowanie obserwatorem
+       OrbitBehavior orbit = new OrbitBehavior(canvas, OrbitBehavior.REVERSE_ALL); //sterowanie myszką
+       BoundingSphere bounds = new BoundingSphere(new Point3d(0,0,0),500);
+       orbit.setSchedulingBounds(bounds);
+       ViewingPlatform vp = uni.getViewingPlatform();
+       vp.setViewPlatformBehavior(orbit);
         Transform3D przesuniecie_obserwatora = new Transform3D();
-        przesuniecie_obserwatora.set(new Vector3f(0.0f,0.8f,5.0f));
+        przesuniecie_obserwatora.set(new Vector3f(0.0f,0.9f,9.0f));
         uni.getViewingPlatform().getViewPlatformTransform().setTransform(przesuniecie_obserwatora);
         BranchGroup mainScene = Scena(uni);
         uni.addBranchGraph(mainScene);
