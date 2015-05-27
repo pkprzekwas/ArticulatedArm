@@ -45,28 +45,52 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
     private final Button naukaPocz             = new Button("Rozpocznij naukę");
     private final Button naukaKon              = new Button("Zakończ naukę");
     private final Button odtwarzaj             = new Button("Odtwórz zapisaną trasę");
-    private Timer zegar_1;
+    private Timer Timer1;
     private boolean klawisz_9=false, klawisz_8=false, klawisz_7=false;
     private boolean klawisz_6=false, klawisz_5=false, klawisz_4=false;
     private boolean klawisz_3=false, klawisz_2=false, klawisz_1=false;
-   // private boolean klawisz_w=false, klawisz_q=false, klawisz_e=false;
+    private boolean klawisz_up=false, klawisz_down=false, klawisz_left=false, klawisz_right=false;
     
-    double Rotation1=0;
+    double Rotation1=1;
+    double Rotation2=1;
+    double Rotation3=1;   
+    double Rotation4=1;
+    double Rotation5=1;
+    double Rotation6=1;
     
-   
     TransformGroup TransformFloor;
     TransformGroup TransformBase;
     TransformGroup Transform_1stPart;
     TransformGroup Transform_1stPartRotation;
-    
-    
     TransformGroup Transform_1stConnector;
+    TransformGroup Transform_2ndPart;
+    TransformGroup Transform_2ndPartRotation;
+    TransformGroup Transform_2ndConnector;
+    TransformGroup Transform_3rdPart;
+    TransformGroup Transform_3rdPartRotation;
+    TransformGroup Transform_3rdConnector;
+    TransformGroup Transform_4thPart;
+    TransformGroup Transform_4thPartRotation;
+    TransformGroup Transform_4thConnector;
+    TransformGroup Transform_5thPart;
+    TransformGroup Transform_5thPartRotation;
+    TransformGroup Transform_5thConnector;
     
-    
+    Transform3D Transform3dBase;
     Transform3D Transform3d_1stPart;
     Transform3D Transform3d_1stPartRotation;
-    Transform3D _1stPartRotation; 
-    Transform3D Transform3dBase;
+    Transform3D Transform3d_2ndPart;
+    Transform3D Transform3d_2ndPartRotation;
+    Transform3D Transform3d_2ndConnector;
+    Transform3D Transform3d_3rdPart;
+    Transform3D Transform3d_3rdPartRotation;
+    Transform3D Transform3d_3rdConnector;
+    Transform3D Transform3d_4thPart;
+    Transform3D Transform3d_4thPartRotation;
+    Transform3D Transform3d_4thConnector;
+    Transform3D Transform3d_5thPart;
+    Transform3D Transform3d_5thPartRotation;
+    Transform3D Transform3d_5thConnector;
     ArticulatedArm(){
 
         setLayout(new BorderLayout());
@@ -112,8 +136,8 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
         uni.getViewingPlatform().getViewPlatformTransform().setTransform(przesuniecie_obserwatora);
         BranchGroup mainScene = Scena(uni);
         uni.addBranchGraph(mainScene);
-        zegar_1 = new Timer(10,this);  
-        zegar_1.start();
+        Timer1 = new Timer(20,this);  
+        Timer1.start();
     }
     
     public void przyciski() {
@@ -133,7 +157,7 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
         mat.setAmbientColor(new Color3f(0.1f, 0.1f, 1.0f));
         
         Appearance wyglad = new Appearance();
-        wyglad.setColoringAttributes(new ColoringAttributes(0.8f,0.5f,0.9f,ColoringAttributes.NICEST));
+        wyglad.setColoringAttributes(new ColoringAttributes(0.1f,0.1f,0.1f,ColoringAttributes.NICEST));
         wyglad.setMaterial(mat);
         
         // Materiał i wygląd podstawy
@@ -145,8 +169,7 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
         wyglad2.setMaterial(mat_podst);
       ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////  
         // Rysowanie statywu i podstawy robota   
-        //Rotacje
-        _1stPartRotation= new Transform3D();
+
         
         
         
@@ -190,6 +213,67 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
         Transform_1stConnector = new TransformGroup(Transform3d_1stConnector);
         Transform_1stConnector.addChild(_1stConnector);
         Transform_1stPart.addChild(Transform_1stConnector);
+        
+        // Druga część
+        Cylinder _2ndPart = new Cylinder(0.2f, 1.2f, wyglad);
+        Transform3d_2ndPart = new Transform3D();  
+        Transform3d_2ndPartRotation= new Transform3D();
+        Transform_2ndPartRotation = new TransformGroup();
+        Transform_2ndPart = new TransformGroup();
+        Transform3d_2ndPart.set(new Vector3f(0.0f, 0.6f, 0));
+        Transform_2ndPart.setTransform(Transform3d_2ndPart);
+        Transform_2ndPartRotation.setTransform(Transform3d_2ndPartRotation);
+        Transform_2ndPart.addChild(_2ndPart);        
+        Transform_2ndPartRotation.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);        
+        Transform_2ndPart.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+        Transform_2ndPartRotation.addChild(Transform_2ndPart);        
+        Transform_1stConnector.addChild(Transform_2ndPartRotation);
+        
+        // Druga nakładka
+        Sphere _2ndConnector = new Sphere(0.22f, 1, 20, wyglad);
+        Transform3d_2ndConnector = new Transform3D();
+        Transform3d_2ndConnector.set(new Vector3f(0.0f,0.6f,0.0f));
+        Transform_2ndConnector = new TransformGroup(Transform3d_2ndConnector);
+        Transform_2ndConnector.addChild(_2ndConnector);
+        Transform_2ndPart.addChild(Transform_2ndConnector);
+        
+        // Trzecia część
+        Cylinder _3rdPart = new Cylinder(0.2f, 1.2f, wyglad);
+        Transform3d_3rdPart = new Transform3D();  
+        Transform3d_3rdPartRotation= new Transform3D();
+        Transform_3rdPartRotation = new TransformGroup();
+        Transform_3rdPart = new TransformGroup();
+        Transform3d_3rdPart.set(new Vector3f(0.0f, 0.6f, 0));
+        Transform_3rdPart.setTransform(Transform3d_3rdPart);
+        Transform_3rdPartRotation.setTransform(Transform3d_3rdPartRotation);
+        Transform_3rdPart.addChild(_3rdPart);        
+        Transform_3rdPartRotation.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);        
+        Transform_3rdPart.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+        Transform_3rdPartRotation.addChild(Transform_3rdPart);        
+        Transform_2ndConnector.addChild(Transform_3rdPartRotation);       
+ 
+        // trzecia nakładka
+        Sphere _3rdConnector = new Sphere(0.18f, 1, 20, wyglad);
+        Transform3d_3rdConnector = new Transform3D();
+        Transform3d_3rdConnector.set(new Vector3f(0.0f,0.61f,0.0f));
+        Transform_3rdConnector = new TransformGroup(Transform3d_3rdConnector);
+        Transform_3rdConnector.addChild(_3rdConnector);
+        Transform_3rdPart.addChild(Transform_3rdConnector);
+        
+        //Czwarta część
+        Cylinder _4thPart = new Cylinder(0.1f, 0.5f, wyglad);
+        Transform3d_4thPart = new Transform3D();  
+        Transform3d_4thPartRotation= new Transform3D();
+        Transform_4thPartRotation = new TransformGroup();
+        Transform_4thPart = new TransformGroup();
+        Transform3d_4thPart.set(new Vector3f(0.0f, 0.25f, 0));
+        Transform_4thPart.setTransform(Transform3d_4thPart);
+        Transform_4thPartRotation.setTransform(Transform3d_4thPartRotation);
+        Transform_4thPart.addChild(_4thPart);        
+        Transform_4thPartRotation.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);        
+        Transform_4thPart.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+        Transform_4thPartRotation.addChild(Transform_4thPart);        
+        Transform_3rdConnector.addChild(Transform_4thPartRotation);  
  
         BoundingSphere bounds = new BoundingSphere (new Point3d(0.0,0.0,0.0),100.0);
       
@@ -232,11 +316,14 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
         if (e.getKeyCode()==KeyEvent.VK_NUMPAD4) {klawisz_4=true;}
         if (e.getKeyCode()==KeyEvent.VK_NUMPAD5) {klawisz_5=true;}
         if (e.getKeyCode()==KeyEvent.VK_NUMPAD6) {klawisz_6=true;}
-        if (e.getKeyCode()==KeyEvent.VK_NUMPAD7) {
-            klawisz_7=true;}
-        if (e.getKeyCode()==KeyEvent.VK_NUMPAD8) {klawisz_8=true;}
+        if (e.getKeyCode()==KeyEvent.VK_NUMPAD7) {klawisz_7=true;}
+        if (e.getKeyCode()==KeyEvent.VK_NUMPAD8) {klawisz_8=true;}       
         if (e.getKeyCode()==KeyEvent.VK_NUMPAD9) {klawisz_9=true;}
-
+        if (e.getKeyCode()==KeyEvent.VK_UP)      {klawisz_up=true;}
+        if (e.getKeyCode()==KeyEvent.VK_DOWN)    {klawisz_down=true;}
+        if (e.getKeyCode()==KeyEvent.VK_LEFT)    {klawisz_left=true;}
+        if (e.getKeyCode()==KeyEvent.VK_RIGHT)   {klawisz_right=true;}
+ 
     }
 
     @Override
@@ -250,24 +337,62 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
         if (e.getKeyCode()==KeyEvent.VK_NUMPAD7) {klawisz_7=false;}
         if (e.getKeyCode()==KeyEvent.VK_NUMPAD8) {klawisz_8=false;}
         if (e.getKeyCode()==KeyEvent.VK_NUMPAD9) {klawisz_9=false;}
+        if (e.getKeyCode()==KeyEvent.VK_UP) {klawisz_up=false;}
+        if (e.getKeyCode()==KeyEvent.VK_DOWN) {klawisz_down=false;}
+        if (e.getKeyCode()==KeyEvent.VK_LEFT) {klawisz_left=false;}
+        if (e.getKeyCode()==KeyEvent.VK_RIGHT) {klawisz_right=false;}
     }
 
     @Override
    public void actionPerformed(ActionEvent e) {
  
         
-        //if(Rotation1 > -2.65){
+        if(Rotation1 > -2.65){
                 if(klawisz_7==true){
                     Rotation1=Rotation1-0.03;}
-           // }
-       // if(Rotation1 < 2.65){
+            }
+        if(Rotation1 < 2.65){
                 if(klawisz_9==true){Rotation1=Rotation1+0.03;}
-         //   }
+            }
+        
+        if(Rotation2 > -2.65){
+                if(klawisz_4==true){
+                    Rotation2=Rotation2-0.03;}
+            }
+        if(Rotation2 < 2.65){
+                if(klawisz_1==true){Rotation2=Rotation2+0.03;}
+            }
+        
+        if(Rotation3 > -2.65){
+                if(klawisz_5==true){
+                    Rotation3=Rotation3-0.03;}
+            }
+        if(Rotation3 < 2.65){
+                if(klawisz_2==true){Rotation3=Rotation3+0.03;}
+            }
+        
+       if(Rotation4 > -1){
+                if(klawisz_6==true){
+                    Rotation4=Rotation4-0.03;}
+            }
+        if(Rotation4 < 1){
+                if(klawisz_3==true){Rotation4=Rotation4+0.03;}
+            }
            Transform3d_1stPartRotation.rotY(Rotation1);
            Transform3d_1stPart.add(Transform3d_1stPartRotation);
            Transform_1stPartRotation.setTransform(Transform3d_1stPartRotation);
            
+           Transform3d_2ndPartRotation.rotX(Rotation2);
+           Transform3d_2ndPart.add(Transform3d_2ndPartRotation);
+           Transform_2ndPartRotation.setTransform(Transform3d_2ndPartRotation);
+           
+           Transform3d_3rdPartRotation.rotX(Rotation3);
+           Transform3d_3rdPart.add(Transform3d_3rdPartRotation);
+           Transform_3rdPartRotation.setTransform(Transform3d_3rdPartRotation);
         
+           Transform3d_4thPartRotation.rotX(Rotation4);
+           Transform3d_4thPart.add(Transform3d_4thPartRotation);
+           Transform_4thPartRotation.setTransform(Transform3d_4thPartRotation);
         }
     
     
