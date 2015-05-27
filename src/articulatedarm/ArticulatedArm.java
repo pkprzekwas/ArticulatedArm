@@ -5,7 +5,9 @@ import com.sun.j3d.utils.applet.MainFrame;
 import com.sun.j3d.utils.behaviors.mouse.MouseWheelZoom;
 import com.sun.j3d.utils.behaviors.vp.OrbitBehavior;
 import com.sun.j3d.utils.geometry.Box;
+import com.sun.j3d.utils.geometry.Cone;
 import com.sun.j3d.utils.geometry.Cylinder;
+import com.sun.j3d.utils.geometry.Sphere;
 import com.sun.j3d.utils.universe.SimpleUniverse;
 import com.sun.j3d.utils.universe.ViewingPlatform;
 import java.applet.Applet;
@@ -49,16 +51,22 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
     private boolean klawisz_3=false, klawisz_2=false, klawisz_1=false;
    // private boolean klawisz_w=false, klawisz_q=false, klawisz_e=false;
     
-    double rotacja_kat_1=0;
+    double Rotation1=0;
     
-    TransformGroup trans_podstawa;
-    TransformGroup robot;
-    Transform3D p_statywu;
-    TransformGroup transformacja_s;
-    TransformGroup przes_walec;
-    Transform3D p_walec;
-    TransformGroup przes_glow;
-    Transform3D _1Stopien;
+   
+    TransformGroup TransformFloor;
+    TransformGroup TransformBase;
+    TransformGroup Transform_1stPart;
+    TransformGroup Transform_1stPartRotation;
+    
+    
+    TransformGroup Transform_1stConnector;
+    
+    
+    Transform3D Transform3d_1stPart;
+    Transform3D Transform3d_1stPartRotation;
+    Transform3D _1stPartRotation; 
+    Transform3D Transform3dBase;
     ArticulatedArm(){
 
         setLayout(new BorderLayout());
@@ -115,8 +123,8 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
     public BranchGroup Scena (SimpleUniverse uni){
         
         BranchGroup scena = new BranchGroup();
-        TransformGroup trans = new TransformGroup();
-        trans = uni.getViewingPlatform().getViewPlatformTransform();
+    //    TransformGroup trans = new TransformGroup();
+      //  trans = uni.getViewingPlatform().getViewPlatformTransform();
 
         // Ustawienie wyglądu wszystkich elementów
         
@@ -136,38 +144,52 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
         wyglad2.setColoringAttributes(new ColoringAttributes(0.5f,0.5f,0.9f,ColoringAttributes.NICEST));
         wyglad2.setMaterial(mat_podst);
       ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////  
-        // Rysowanie statywu i podstawy robota       
-        _1Stopien= new Transform3D();
-        robot = new TransformGroup();
-        robot.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+        // Rysowanie statywu i podstawy robota   
+        //Rotacje
+        _1stPartRotation= new Transform3D();
         
-        Cylinder podstawa = new Cylinder(2.0f, 0.01f, wyglad2);
-        trans_podstawa = new TransformGroup();
-        trans_podstawa.addChild(podstawa);       
-        scena.addChild(trans_podstawa);
         
-        Box statyw = new Box(0.25f,0.015f,0.25f, wyglad);        
-        p_statywu = new Transform3D();
-        p_statywu.set(new Vector3f(0.0f,0.005f,0.0f));
-        transformacja_s = new TransformGroup(p_statywu);
-        transformacja_s.addChild(statyw);
-        robot.addChild(transformacja_s);
+        
+        
+        //Podłoga
+        Cylinder Floor = new Cylinder(2.0f, 0.01f, wyglad2);
+        TransformFloor = new TransformGroup();
+        TransformFloor.addChild(Floor);    
+        TransformFloor.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+        scena.addChild(TransformFloor);
+         
+        // Podstawka
+        Cylinder Base = new Cylinder(0.5f,0.4f,2, wyglad);        
+        Transform3dBase = new Transform3D();
+        TransformBase = new TransformGroup();
+        Transform3dBase.set(new Vector3f(0.0f,0.2f,0.0f));
+        TransformBase.setTransform(Transform3dBase);
+        TransformBase.addChild(Base);
+        TransformBase.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+        TransformFloor.addChild(TransformBase);
        
-        Cylinder walec = new Cylinder(0.12f, 0.8f, wyglad);
+        // Pierwsza część
+        Cylinder _1stPart = new Cylinder(0.2f, 1.0f, wyglad);
+        Transform3d_1stPart = new Transform3D();  
+        Transform3d_1stPartRotation= new Transform3D();
+        Transform_1stPartRotation = new TransformGroup();
+        Transform_1stPart = new TransformGroup();
+        Transform3d_1stPart.set(new Vector3f(0.0f, 0.5f, 0));
+        Transform_1stPart.setTransform(Transform3d_1stPart);
+        Transform_1stPartRotation.setTransform(Transform3d_1stPartRotation);
+        Transform_1stPart.addChild(_1stPart);        
+        Transform_1stPartRotation.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);        
+        Transform_1stPart.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+        Transform_1stPartRotation.addChild(Transform_1stPart);        
+        TransformBase.addChild(Transform_1stPartRotation);
         
-        
-        p_walec = new Transform3D();
-        p_walec.set(new Vector3f(0.0f, 0.395f, 0));
-        przes_walec = new TransformGroup(p_walec);
-        przes_walec.addChild(walec);
-        robot.addChild(przes_walec);
-        
-        Box glowica = new Box(0.1f, 0.1f, 0.1f, wyglad);
-        Transform3D p_glowicy = new Transform3D();
-        p_glowicy.set(new Vector3f(0.0f,0.895f,0.0f));
-        przes_glow = new TransformGroup(p_glowicy);
-        przes_glow.addChild(glowica);
-        robot.addChild(przes_glow);
+        // Pierwsza nakładka
+        Sphere _1stConnector = new Sphere(0.22f, 1, 20, wyglad);
+        Transform3D Transform3d_1stConnector = new Transform3D();
+        Transform3d_1stConnector.set(new Vector3f(0.0f,0.5f,0.0f));
+        Transform_1stConnector = new TransformGroup(Transform3d_1stConnector);
+        Transform_1stConnector.addChild(_1stConnector);
+        Transform_1stPart.addChild(Transform_1stConnector);
  
         BoundingSphere bounds = new BoundingSphere (new Point3d(0.0,0.0,0.0),100.0);
       
@@ -185,7 +207,7 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
         ambientLightNode.setInfluencingBounds(bounds);
         scena.addChild(ambientLightNode);   
         
-        scena.addChild(robot);
+        
         scena.compile();
         return scena;        
     }
@@ -234,15 +256,17 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
    public void actionPerformed(ActionEvent e) {
  
         
-      //  if(rotacja_kat_1 > -2.65){
+        //if(Rotation1 > -2.65){
                 if(klawisz_7==true){
-                    rotacja_kat_1=rotacja_kat_1-0.03;}
+                    Rotation1=Rotation1-0.03;}
            // }
-      //  if(rotacja_kat_1 < 2.65){
-                if(klawisz_9==true){rotacja_kat_1=rotacja_kat_1+0.03;}
-          //  }
-                    _1Stopien.rotY(rotacja_kat_1);
-            robot.setTransform(_1Stopien);
+       // if(Rotation1 < 2.65){
+                if(klawisz_9==true){Rotation1=Rotation1+0.03;}
+         //   }
+           Transform3d_1stPartRotation.rotY(Rotation1);
+           Transform3d_1stPart.add(Transform3d_1stPartRotation);
+           Transform_1stPartRotation.setTransform(Transform3d_1stPartRotation);
+           
         
         }
     
