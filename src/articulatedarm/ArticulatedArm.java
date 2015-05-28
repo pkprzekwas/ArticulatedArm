@@ -82,10 +82,13 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
     TransformGroup TransformHolder2;
     TransformGroup TransformHolder1Move;
     TransformGroup TransformHolder2Move;
+    TransformGroup TransformBall;
+    TransformGroup TransformBallMove;
     
     Transform3D Transform3dBase;
     Transform3D Transform3d_1stPart;
     Transform3D Transform3d_1stPartRotation;
+    Transform3D Transform3d_1stConnector;
     Transform3D Transform3d_2ndPart;
     Transform3D Transform3d_2ndPartRotation;
     Transform3D Transform3d_2ndConnector;
@@ -105,6 +108,26 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
     Transform3D Transform3dHolder2;
     Transform3D Transform3dHolder1Move;
     Transform3D Transform3dHolder2Move;
+    Transform3D Transform3dBall;
+    Transform3D Transform3dBallMove;
+    
+    Cylinder Floor;
+    Sphere Ball;
+    Cylinder Base;
+    Cylinder _1stPart;
+    Sphere _1stConnector;
+    Cylinder _2ndPart;
+    Cylinder _2ndPartBegine;
+    Sphere _2ndConnector;
+    Cylinder _3rdPart;
+    Sphere _3rdConnector;
+    Cylinder _4thPart;
+    Box Grip;
+    Box Holder1;
+    Box Holder2;
+    
+    
+    
     ArticulatedArm(){
 
         setLayout(new BorderLayout());
@@ -189,14 +212,22 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
         
         
         //Podłoga
-        Cylinder Floor = new Cylinder(5.0f, 0.01f, wyglad2);
+        Floor = new Cylinder(5.0f, 0.01f, wyglad2);
         TransformFloor = new TransformGroup();
         TransformFloor.addChild(Floor);    
         TransformFloor.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
         scena.addChild(TransformFloor);
+        
+        //Kulka
+        Ball = new Sphere(0.10f, 1, 20, wyglad);
+        Transform3dBall = new Transform3D();
+        Transform3dBall.set(new Vector3f(1.5f,0.10f,1.5f));
+        TransformBall = new TransformGroup(Transform3dBall);
+        TransformBall.addChild(Ball);
+        TransformFloor.addChild(TransformBall);
          
         // Podstawka
-        Cylinder Base = new Cylinder(0.5f,0.4f,2, wyglad);        
+        Base = new Cylinder(0.5f,0.4f,2, wyglad);        
         Transform3dBase = new Transform3D();
         TransformBase = new TransformGroup();
         Transform3dBase.set(new Vector3f(0.0f,0.2f,0.0f));
@@ -206,7 +237,7 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
         TransformFloor.addChild(TransformBase);
        
         // Pierwsza część
-        Cylinder _1stPart = new Cylinder(0.28f, 1.0f, wyglad);
+        _1stPart  = new Cylinder(0.28f, 1.0f, wyglad);
         Transform3d_1stPart = new Transform3D();  
         Transform3d_1stPartRotation= new Transform3D();
         Transform_1stPartRotation = new TransformGroup();
@@ -221,38 +252,47 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
         TransformBase.addChild(Transform_1stPartRotation);
         
         // Pierwsza nakładka
-        Sphere _1stConnector = new Sphere(0.28f, 1, 20, wyglad);
-        Transform3D Transform3d_1stConnector = new Transform3D();
+        _1stConnector = new Sphere(0.28f, 1, 20, wyglad);
+        Transform3d_1stConnector = new Transform3D();
         Transform3d_1stConnector.set(new Vector3f(0.0f,0.5f,0.0f));
         Transform_1stConnector = new TransformGroup(Transform3d_1stConnector);
         Transform_1stConnector.addChild(_1stConnector);
         Transform_1stPart.addChild(Transform_1stConnector);
         
         // Druga część
-        Cylinder _2ndPart = new Cylinder(0.2f, 1.2f, wyglad);
+        _2ndPart = new Cylinder(0.19f, 1.0f, wyglad);
+        _2ndPartBegine = new Cylinder(0.24f, 0.1f, wyglad);
+        Transform3D Transform3d_2ndPartBegine;
+        TransformGroup Transform_2ndPartBegine;
         Transform3d_2ndPart = new Transform3D();  
         Transform3d_2ndPartRotation= new Transform3D();
         Transform_2ndPartRotation = new TransformGroup();
         Transform_2ndPart = new TransformGroup();
         Transform3d_2ndPart.set(new Vector3f(0.0f, 0.6f, 0));
         Transform_2ndPart.setTransform(Transform3d_2ndPart);
+        Transform3d_2ndPartBegine = new Transform3D();  
+        Transform_2ndPartBegine = new TransformGroup();
+        Transform3d_2ndPartBegine.set(new Vector3f(0.0f, 0.5f, 0));
+        Transform_2ndPartBegine.setTransform(Transform3d_2ndPartBegine);
         Transform_2ndPartRotation.setTransform(Transform3d_2ndPartRotation);
-        Transform_2ndPart.addChild(_2ndPart);        
+        Transform_2ndPart.addChild(_2ndPart);    
+        Transform_2ndPartBegine.addChild(_2ndPartBegine);    
+        Transform_2ndPart.addChild(Transform_2ndPartBegine);      
         Transform_2ndPartRotation.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);        
         Transform_2ndPart.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
         Transform_2ndPartRotation.addChild(Transform_2ndPart);        
         Transform_1stConnector.addChild(Transform_2ndPartRotation);
         
         // Druga nakładka
-        Sphere _2ndConnector = new Sphere(0.22f, 1, 20, wyglad);
+        _2ndConnector = new Sphere(0.24f, 1, 20, wyglad);
         Transform3d_2ndConnector = new Transform3D();
-        Transform3d_2ndConnector.set(new Vector3f(0.0f,0.6f,0.0f));
+        Transform3d_2ndConnector.set(new Vector3f(0.0f,0.63f,0.0f));
         Transform_2ndConnector = new TransformGroup(Transform3d_2ndConnector);
         Transform_2ndConnector.addChild(_2ndConnector);
         Transform_2ndPart.addChild(Transform_2ndConnector);
         
         // Trzecia część
-        Cylinder _3rdPart = new Cylinder(0.2f, 1.2f, wyglad);
+        _3rdPart = new Cylinder(0.16f, 1.2f, wyglad);
         Transform3d_3rdPart = new Transform3D();  
         Transform3d_3rdPartRotation= new Transform3D();
         Transform_3rdPartRotation = new TransformGroup();
@@ -267,7 +307,7 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
         Transform_2ndConnector.addChild(Transform_3rdPartRotation);       
  
         // trzecia nakładka
-        Sphere _3rdConnector = new Sphere(0.18f, 1, 20, wyglad);
+        _3rdConnector = new Sphere(0.15f, 1, 20, wyglad);
         Transform3d_3rdConnector = new Transform3D();
         Transform3d_3rdConnector.set(new Vector3f(0.0f,0.61f,0.0f));
         Transform_3rdConnector = new TransformGroup(Transform3d_3rdConnector);
@@ -275,7 +315,7 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
         Transform_3rdPart.addChild(Transform_3rdConnector);
         
         //Czwarta część
-        Cylinder _4thPart = new Cylinder(0.1f, 0.5f, wyglad);
+        _4thPart = new Cylinder(0.1f, 0.5f, wyglad);
         Transform3d_4thPart = new Transform3D();  
         Transform3d_4thPartRotationX= new Transform3D();
         Transform3d_4thPartRotationZ= new Transform3D();
@@ -295,7 +335,7 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
         Transform_3rdConnector.addChild(Transform_4thPartRotationZ);  
         
         // Chwytak
-        Box Grip = new Box(0.2f, 0.01f, 0.08f, wyglad);
+        Grip = new Box(0.2f, 0.01f, 0.08f, wyglad);
         Transform3dGrip = new Transform3D();  
         Transform3dGripRotation= new Transform3D();
         TransformGripRotation = new TransformGroup();
@@ -310,8 +350,8 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
         Transform_4thPartRotationX.addChild(TransformGripRotation); 
         
         // Palce
-        Box Holder1 = new Box(0.01f, 0.1f,0.08f, wyglad);
-        Box Holder2 = new Box(0.01f, 0.1f,0.08f, wyglad);
+        Holder1 = new Box(0.01f, 0.1f,0.08f, wyglad);
+        Holder2 = new Box(0.01f, 0.1f,0.08f, wyglad);
         Transform3dHolder1 = new Transform3D();  
         Transform3dHolder2 = new Transform3D();  
         
@@ -412,46 +452,42 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
     @Override
    public void actionPerformed(ActionEvent e) {
  
-        
+        // 1 stopień
         if(Rotation1 > -2.65){
-                if(klawisz_9==true){
-                    Rotation1=Rotation1-0.03;}
+                if(klawisz_9==true){Rotation1=Rotation1-0.03;}
             }
         if(Rotation1 < 2.65){
                 if(klawisz_7==true){Rotation1=Rotation1+0.03;}
             }
-        
-        if(Rotation2 > -2.65){
-                if(klawisz_4==true){
-                    Rotation2=Rotation2-0.03;}
+        // 2 Stopień
+        if(Rotation2 > 0.2){
+                if(klawisz_4==true){Rotation2=Rotation2-0.03;}
             }
-        if(Rotation2 < 2.65){
+        if(Rotation2 < 1.6){
                 if(klawisz_1==true){Rotation2=Rotation2+0.03;}
             }
-        
-        if(Rotation3 > -2.65){
-                if(klawisz_5==true){
-                    Rotation3=Rotation3-0.03;}
+        // 3 Stopień
+        if(Rotation3 > -1.0){
+                if(klawisz_5==true){Rotation3=Rotation3-0.03;}
             }
-        if(Rotation3 < 2.65){
+        if(Rotation3 < 1.7){
                 if(klawisz_2==true){Rotation3=Rotation3+0.03;}
             }
-        
+        // 4 Stopień
        if(Rotation4 > -1){
-                if(klawisz_up==true){
-                    Rotation4=Rotation4-0.03;}
-            }
-       if(Rotation5 < 1){
-                if(klawisz_right==true){Rotation5=Rotation5+0.03;}
-            }
-               if(Rotation5 > -1){
-                if(klawisz_left==true){
-                    Rotation5=Rotation5-0.03;}
+                if(klawisz_up==true){Rotation4=Rotation4-0.03;}
             }
         if(Rotation4 < 1){
                 if(klawisz_down==true){Rotation4=Rotation4+0.03;}
             }
-        
+       // 5Stopień
+       if(Rotation5 > -1){
+                if(klawisz_left==true){Rotation5=Rotation5-0.03;}
+            }
+       if(Rotation5 < 1){
+                if(klawisz_right==true){Rotation5=Rotation5+0.03;}
+            }
+        // Chwytak
         if(Move6 > 0.01){
                 if(klawisz_6==true){
                     Move6=Move6-0.03f;}
@@ -477,7 +513,13 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
            TransformHolder1Move.setTransform(Transform3dHolder1Move);
            Transform3dHolder2Move.set(new Vector3f(Move6, 0, 0));
            TransformHolder2Move.setTransform(Transform3dHolder2Move);
+           Collision();
         }
     
+public void Collision(){
     
+    
+    
+}
+        
 }
