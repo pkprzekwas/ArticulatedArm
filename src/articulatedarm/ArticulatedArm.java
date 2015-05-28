@@ -57,10 +57,11 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
     double Rotation3=1;   
     double Rotation4=1;
     double Rotation5=1;
-    float Move6=0.06f;
+    float Move6=0.3f;
     boolean GripLocked;
     boolean CollisionDetected = false;
-    boolean BallGrabbed= false;
+    int BallGrabbed= 0;
+    int BallFall=0;
     
     TransformGroup TransformFloor;
     TransformGroup TransformBase;
@@ -134,7 +135,8 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
     Sphere End;
     
     Vector3f GripPosition;
-    
+    Vector3f BallPosition;
+    Vector3f GripToObjectVevtor;
     ArticulatedArm(){
 
         setLayout(new BorderLayout());
@@ -183,6 +185,7 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
         Timer1 = new Timer(20,this);  
         Timer1.start();
         GripPosition = new Vector3f();
+        BallPosition = new Vector3f();
     }
     
     public void przyciski() {
@@ -231,7 +234,12 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
         Transform3dBall = new Transform3D();
         Transform3dBall.set(new Vector3f(1.5f,0.10f,1.5f));
         TransformBall = new TransformGroup(Transform3dBall);
-        TransformBall.addChild(Ball);
+        Transform3dBallMove = new Transform3D();
+        TransformBall.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);  
+        TransformBallMove= new TransformGroup(Transform3dBallMove);
+        TransformBallMove.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE); 
+        TransformBall.addChild(TransformBallMove);
+        TransformBallMove.addChild(Ball);
         TransformFloor.addChild(TransformBall);
          
         // Podstawka
@@ -471,6 +479,7 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
    public void actionPerformed(ActionEvent e) {
         Collision();
         GrabBall();
+        MoveBall();
         // 1 stopień
         if(Rotation1 > -2.65){
                 if(klawisz_9==true){Rotation1=Rotation1-0.03;}
@@ -507,11 +516,11 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
                 if(klawisz_right==true){Rotation5=Rotation5+0.03;}
             }
         // Chwytak
-        if(Move6 > 0.01){
+        if(Move6 > 0.28){
                 if(klawisz_6==true){
                     Move6=Move6-0.03f;}
             }
-        if(Move6 < 0.08){
+        if(Move6 < 0.32){
                 if(klawisz_3==true){Move6=Move6+0.03f;}
             }
            Transform3d_1stPartRotation.rotY(Rotation1);
@@ -533,7 +542,7 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
            Transform3dHolder2Move.set(new Vector3f(Move6, 0, 0));
            TransformHolder2Move.setTransform(Transform3dHolder2Move);
           
-           if(Move6<0.3)
+           if(Move6<0.3 )
                GripLocked=true;
            else
                GripLocked=false;
@@ -544,6 +553,15 @@ public void Collision(){
     Transform3dTemp= new Transform3D();
  End.getLocalToVworld(Transform3dTemp);
  Transform3dTemp.get(GripPosition);
+ 
+        
+        Transform3D Transform3dTemp2= new Transform3D();
+        TransformBallMove.getLocalToVworld(Transform3dTemp2);
+        Transform3dTemp2.get(BallPosition);
+ 
+ 
+ 
+ 
  if (GripPosition.y<0.01)
  {
      CollisionDetected=true;
@@ -576,14 +594,51 @@ public void Collision(){
 }
   public void GrabBall()
   {
-      if(klawisz_8 && !BallGrabbed)
+      if(GripLocked && BallGrabbed==0)
       {
         //liczenie odległości
-        Transform3D Transform3dTemp; 
-        Transform3dTemp= new Transform3D();
-        End.getLocalToVworld(Transform3dTemp);
-        Transform3dTemp.get(GripPosition);
-          
+          float BallGripDistance;
+        
+        Point3f _1point= new Point3f(BallPosition.getX(),BallPosition.getY(),BallPosition.getZ());
+        Point3f _2point= new Point3f(GripPosition.getX(),GripPosition.getY(),GripPosition.getZ());
+        BallGripDistance= _1point.distance(_2point);
+        if(BallGripDistance<0.1f)
+        {
+            BallGrabbed=1;
+        }
+
       }
+      if(!GripLocked)
+           BallGrabbed=0;
   }
+  public void MoveBall()
+  {
+      if(BallGrabbed==1)
+      {
+          GripToObjectVevtor= new Vector3f(BallPosition);
+          GripToObjectVevtor.sub(GripPosition);
+          BallGrabbed=2;
+         }
+      if(BallGrabbed==2)
+      {
+          Vector3f temp = new Vector3f(BallPosition);
+          temp.sub(GripPosition);
+          Transform3dBallMove.set(new Vector3f(-temp.x+GripToObjectVevtor.x,-temp.y+GripToObjectVevtor.y,-temp.z+GripToObjectVevtor.z));
+          TransformBallMove.setTransform(Transform3dBallMove);
+      }
+  
+      if(BallGrabbed==0)
+      {
+          
+          
+          if(BallPosition.y>0.0f)
+          {
+          BallFall++;
+          Transform3dBallMove.set(new Vector3f(0.0f,-0.001f*BallFall*BallFall, 0.0f));
+          TransformBallMove.setTransform(Transform3dBallMove);
+          }
+          else
+              BallFall=0;
+      }
+  } 
 }
