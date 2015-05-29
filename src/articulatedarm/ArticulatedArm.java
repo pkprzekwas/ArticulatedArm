@@ -631,7 +631,7 @@ public void Collision(){
       {
           
           
-          if(BallPosition.y>0.0f)
+          if(BallPosition.y>0.1f)
           {
           BallFall++;
           Transform3dBallMove.set(new Vector3f(0.0f,-0.001f*BallFall*BallFall, 0.0f));
