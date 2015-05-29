@@ -635,7 +635,7 @@ public void Collision(){
           if(BallPosition.y>0.1f)
           {
             BallFall++;
-            Transform3dBall.set(new Vector3f(BallPosition.x,BallPosition.y-0.0001f*BallFall*BallFall, BallPosition.z));
+            Transform3dBall.set(new Vector3f(BallPosition.x,BallPosition.y-0.0003f*BallFall*BallFall, BallPosition.z));
             TransformBall.setTransform(Transform3dBall);
           }
           else
