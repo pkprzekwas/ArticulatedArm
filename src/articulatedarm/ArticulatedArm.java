@@ -556,7 +556,7 @@ public void Collision(){
  
         
         Transform3D Transform3dTemp2= new Transform3D();
-        TransformBallMove.getLocalToVworld(Transform3dTemp2);
+        Ball.getLocalToVworld(Transform3dTemp2);
         Transform3dTemp2.get(BallPosition);
  
  
@@ -621,24 +621,30 @@ public void Collision(){
          }
       if(BallGrabbed==2)
       {
-          Vector3f temp = new Vector3f(BallPosition);
-          temp.sub(GripPosition);
-          Transform3dBallMove.set(new Vector3f(-temp.x+GripToObjectVevtor.x,-temp.y+GripToObjectVevtor.y,-temp.z+GripToObjectVevtor.z));
-          TransformBallMove.setTransform(Transform3dBallMove);
+          Vector3f temp = new Vector3f();
+          temp.add(GripPosition);
+          //temp.add(GripToObjectVevtor);
+          Transform3dBall.set(temp);
+          TransformBall.setTransform(Transform3dBall);
       }
   
       if(BallGrabbed==0)
       {
           
           
-          if(BallPosition.y>0.0f)
+          if(BallPosition.y>0.1f)
           {
-          BallFall++;
-          Transform3dBallMove.set(new Vector3f(0.0f,-0.001f*BallFall*BallFall, 0.0f));
-          TransformBallMove.setTransform(Transform3dBallMove);
+            BallFall++;
+            Transform3dBall.set(new Vector3f(BallPosition.x,BallPosition.y-0.0001f*BallFall*BallFall, BallPosition.z));
+            TransformBall.setTransform(Transform3dBall);
           }
           else
+          {
               BallFall=0;
+                Transform3dBall.set(new Vector3f(BallPosition.x,0.1f, BallPosition.z));
+                TransformBall.setTransform(Transform3dBall);
+          }
+          
       }
   } 
 }
