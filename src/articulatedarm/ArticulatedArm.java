@@ -8,6 +8,7 @@ import com.sun.j3d.utils.geometry.Box;
 import com.sun.j3d.utils.geometry.Cone;
 import com.sun.j3d.utils.geometry.Cylinder;
 import com.sun.j3d.utils.geometry.Sphere;
+import com.sun.j3d.utils.image.TextureLoader;
 import com.sun.j3d.utils.universe.SimpleUniverse;
 import com.sun.j3d.utils.universe.ViewingPlatform;
 import java.applet.Applet;
@@ -26,7 +27,10 @@ import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Canvas3D;
 import javax.media.j3d.ColoringAttributes;
 import javax.media.j3d.DirectionalLight;
+import javax.media.j3d.ImageComponent2D;
 import javax.media.j3d.Material;
+import javax.media.j3d.Texture;
+import javax.media.j3d.Texture2D;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
 import javax.swing.Timer;
@@ -119,6 +123,8 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
     Transform3D Transform3dEnd;
     
     Cylinder Floor;
+    Cylinder Floor1;
+    Cylinder Floor2;
     Sphere Ball;
     Cylinder Base;
     Cylinder _1stPart;
@@ -137,6 +143,7 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
     Vector3f GripPosition;
     Vector3f BallPosition;
     Vector3f GripToObjectVevtor;
+    
     ArticulatedArm(){
 
         setLayout(new BorderLayout());
@@ -202,11 +209,19 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
         
         // Matriał i wygląd robota
         Material mat = new Material();
-        mat.setAmbientColor(new Color3f(0.1f, 0.1f, 1.0f));
+        mat.setAmbientColor(new Color3f(0.9f, 0.9f, 0.9f));
         
         Appearance wyglad = new Appearance();
-        wyglad.setColoringAttributes(new ColoringAttributes(0.1f,0.1f,0.1f,ColoringAttributes.NICEST));
+        wyglad.setColoringAttributes(new ColoringAttributes(0.9f,0.9f,0.9f,ColoringAttributes.NICEST));
         wyglad.setMaterial(mat);
+        
+        Material bl_mat = new Material();
+        bl_mat.setAmbientColor(new Color3f(0.0f, 0.0f, 0.0f));
+        
+        Appearance bl_app = new Appearance();
+        bl_app.setColoringAttributes(new ColoringAttributes(0.0f,0.0f,0.0f,ColoringAttributes.NICEST));
+        bl_app.setMaterial(bl_mat);
+        
         
         // Materiał i wygląd podstawy
         Material mat_podst = new Material();
@@ -215,24 +230,77 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
         Appearance wyglad2 = new Appearance();
         wyglad2.setColoringAttributes(new ColoringAttributes(0.5f,0.5f,0.9f,ColoringAttributes.NICEST));
         wyglad2.setMaterial(mat_podst);
-      ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////  
-        // Rysowanie statywu i podstawy robota   
+        
+        // Materiał i wygląd klatki
+        Material mat_cage = new Material();
+        mat_cage.setAmbientColor(new Color3f(0.0f, 0.0f, 0.0f));
+        
+        Appearance floor_app = new Appearance();
+        floor_app.setColoringAttributes(new ColoringAttributes(0.8f,0.8f,0.9f,ColoringAttributes.NICEST));
+        floor_app.setMaterial(mat_cage);
+        
+        // Tekstury
+        Appearance cage_tex   = new Appearance();
+        Appearance robo_tex   = new Appearance();
 
         
+        TextureLoader loader = new TextureLoader("obrazki/biolab.jpg",null);
+        ImageComponent2D image = loader.getImage();
+
+        Texture2D cage_t = new Texture2D(Texture.BASE_LEVEL, Texture.RGBA,
+                                        image.getWidth(), image.getHeight());
+
+        cage_t.setImage(0, image);
+        cage_t.setBoundaryModeS(Texture.WRAP);
+        cage_t.setBoundaryModeT(Texture.WRAP);
         
+        loader = new TextureLoader("obrazki/murek.jpg",this);
+        image = loader.getImage();
+
+        Texture2D murek = new Texture2D(Texture.BASE_LEVEL, Texture.RGBA,
+                                        image.getWidth(), image.getHeight());
+        murek.setImage(0, image);
+        murek.setBoundaryModeS(Texture.WRAP);
+        murek.setBoundaryModeT(Texture.WRAP);
+        
+        cage_tex.setTexture(cage_t);
+        robo_tex.setTexture(murek);
+
+      ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////  
+        // Rysowanie tła, statywu i podstawy robota   
+
+        // Klatka
+        Sphere cage = new Sphere(14f, Sphere.GENERATE_NORMALS_INWARD| Sphere.GENERATE_TEXTURE_COORDS, cage_tex);
+        scena.addChild(cage);
         
         
         //Podłoga
-        Floor = new Cylinder(5.0f, 0.01f, wyglad2);
+        Floor = new Cylinder(5.0f, 0.01f, wyglad);
         TransformFloor = new TransformGroup();
-        TransformFloor.addChild(Floor);    
+        TransformFloor.addChild(Floor);   
         TransformFloor.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
         scena.addChild(TransformFloor);
         
+        Floor1 = new Cylinder(5.0f, 6.0f, wyglad);
+        Transform3D floor_move = new Transform3D();
+        floor_move.set(new Vector3f(0.0f,-3.0f,0.0f));
+        TransformGroup TransformFloor1 = new TransformGroup(floor_move);
+        TransformFloor1.addChild(Floor1);   
+        TransformFloor1.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+        scena.addChild(TransformFloor1);
+        
+        Floor2 = new Cylinder(13.5f, 3.0f, floor_app);
+        Transform3D floor_move2 = new Transform3D();
+        floor_move2.set(new Vector3f(0.0f,-2.0f,0.0f));
+        TransformGroup TransformFloor2 = new TransformGroup(floor_move2);
+        TransformFloor2.addChild(Floor2);   
+        TransformFloor2.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+        scena.addChild(TransformFloor2);
+        
         //Kulka
-        Ball = new Sphere(0.10f, 1, 20, wyglad);
+        Ball = new Sphere(0.10f, 1, 20, bl_app);
         Transform3dBall = new Transform3D();
-        Transform3dBall.set(new Vector3f(1.5f,0.10f,1.5f));
+        Transform3dBall.set(new Vector3f(1.5f,5.10f,1.5f));
         TransformBall = new TransformGroup(Transform3dBall);
         Transform3dBallMove = new Transform3D();
         TransformBall.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);  
@@ -243,17 +311,17 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
         TransformFloor.addChild(TransformBall);
          
         // Podstawka
-        Base = new Cylinder(0.5f,0.4f,2, wyglad);        
+        Base = new Cylinder(0.5f,0.4f, bl_app);        
         Transform3dBase = new Transform3D();
         TransformBase = new TransformGroup();
         Transform3dBase.set(new Vector3f(0.0f,0.2f,0.0f));
         TransformBase.setTransform(Transform3dBase);
         TransformBase.addChild(Base);
         TransformBase.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
-        TransformFloor.addChild(TransformBase);
+        scena.addChild(TransformBase);
        
         // Pierwsza część
-        _1stPart  = new Cylinder(0.28f, 1.0f, wyglad);
+        _1stPart  = new Cylinder(0.2f, 1.0f, wyglad);
         Transform3d_1stPart = new Transform3D();  
         Transform3d_1stPartRotation= new Transform3D();
         Transform_1stPartRotation = new TransformGroup();
@@ -268,7 +336,7 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
         TransformBase.addChild(Transform_1stPartRotation);
         
         // Pierwsza nakładka
-        _1stConnector = new Sphere(0.28f, 1, 20, wyglad);
+        _1stConnector = new Sphere(0.28f, 1, 20, bl_app);
         Transform3d_1stConnector = new Transform3D();
         Transform3d_1stConnector.set(new Vector3f(0.0f,0.5f,0.0f));
         Transform_1stConnector = new TransformGroup(Transform3d_1stConnector);
@@ -277,7 +345,7 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
         
         // Druga część
         _2ndPart = new Cylinder(0.19f, 1.0f, wyglad);
-        _2ndPartBegine = new Cylinder(0.24f, 0.1f, wyglad);
+        _2ndPartBegine = new Cylinder(0.24f, 0.1f, bl_app);
         Transform3D Transform3d_2ndPartBegine;
         TransformGroup Transform_2ndPartBegine;
         Transform3d_2ndPart = new Transform3D();  
@@ -300,7 +368,7 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
         Transform_1stConnector.addChild(Transform_2ndPartRotation);
         
         // Druga nakładka
-        _2ndConnector = new Sphere(0.24f, 1, 20, wyglad);
+        _2ndConnector = new Sphere(0.24f, 1, 20, bl_app);
         Transform3d_2ndConnector = new Transform3D();
         Transform3d_2ndConnector.set(new Vector3f(0.0f,0.63f,0.0f));
         Transform_2ndConnector = new TransformGroup(Transform3d_2ndConnector);
@@ -323,7 +391,7 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
         Transform_2ndConnector.addChild(Transform_3rdPartRotation);       
  
         // trzecia nakładka
-        _3rdConnector = new Sphere(0.15f, 1, 20, wyglad);
+        _3rdConnector = new Sphere(0.15f, 1, 20, bl_app);
         Transform3d_3rdConnector = new Transform3D();
         Transform3d_3rdConnector.set(new Vector3f(0.0f,0.61f,0.0f));
         Transform_3rdConnector = new TransformGroup(Transform3d_3rdConnector);
@@ -351,7 +419,7 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
         Transform_3rdConnector.addChild(Transform_4thPartRotationZ);  
         
         // Chwytak
-        Grip = new Box(0.2f, 0.01f, 0.08f, wyglad);
+        Grip = new Box(0.2f, 0.01f, 0.08f, bl_app);
         Transform3dGrip = new Transform3D();  
         Transform3dGripRotation= new Transform3D();
         TransformGripRotation = new TransformGroup();
@@ -366,8 +434,8 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
         Transform_4thPartRotationX.addChild(TransformGripRotation); 
         
         // Palce
-        Holder1 = new Box(0.01f, 0.1f,0.08f, wyglad);
-        Holder2 = new Box(0.01f, 0.1f,0.08f, wyglad);
+        Holder1 = new Box(0.01f, 0.1f,0.08f, bl_app);
+        Holder2 = new Box(0.01f, 0.1f,0.08f, bl_app);
         Transform3dHolder1 = new Transform3D();  
         Transform3dHolder2 = new Transform3D();  
         
