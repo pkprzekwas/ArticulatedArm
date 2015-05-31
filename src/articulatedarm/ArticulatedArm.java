@@ -50,11 +50,18 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
     private final Button naukaPocz             = new Button("Rozpocznij naukę");
     private final Button naukaKon              = new Button("Zakończ naukę");
     private final Button odtwarzaj             = new Button("Odtwórz zapisaną trasę");
-    private Timer Timer1;
+    private final Timer Timer1;
     private boolean klawisz_9=false, klawisz_8=false, klawisz_7=false;
     private boolean klawisz_6=false, klawisz_5=false, klawisz_4=false;
     private boolean klawisz_3=false, klawisz_2=false, klawisz_1=false;
     private boolean klawisz_up=false, klawisz_down=false, klawisz_left=false, klawisz_right=false;
+    
+    private boolean recording = false;
+    private boolean playing = false;
+    private boolean waiting = false;
+    public int[] steps;
+    public int steps_counter = 0; 
+    public int steps_count; 
     
     double Rotation1=1;
     double Rotation2=1;
@@ -144,6 +151,8 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
     Vector3f BallPosition;
     Vector3f GripToObjectVevtor;
     
+
+    
     ArticulatedArm(){
 
         setLayout(new BorderLayout());
@@ -175,13 +184,14 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
         add("North", p); 
         pozPoczatkowa.addActionListener(this);
         pozPoczatkowa.addKeyListener(this);
+      
         
         
         SimpleUniverse uni = new SimpleUniverse(canvas);
                //sterowanie obserwatorem
        OrbitBehavior orbit = new OrbitBehavior(canvas, OrbitBehavior.REVERSE_ALL); //sterowanie myszką
        BoundingSphere bounds = new BoundingSphere(new Point3d(0,0,0),500);
-       orbit.setSchedulingBounds(bounds);
+       orbit.setSchedulingBounds(bounds);    
        ViewingPlatform vp = uni.getViewingPlatform();
        vp.setViewPlatformBehavior(orbit);
         Transform3D przesuniecie_obserwatora = new Transform3D();
@@ -275,7 +285,7 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
         
         
         //Podłoga
-        Floor = new Cylinder(5.0f, 0.01f, wyglad);
+        Floor = new Cylinder(5.0f, 0.01f, wyglad2);
         TransformFloor = new TransformGroup();
         TransformFloor.addChild(Floor);   
         TransformFloor.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
@@ -300,7 +310,7 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
         //Kulka
         Ball = new Sphere(0.10f, 1, 20, bl_app);
         Transform3dBall = new Transform3D();
-        Transform3dBall.set(new Vector3f(1.5f,5.10f,1.5f));
+        Transform3dBall.set(new Vector3f(1.5f,0.10f,1.5f));
         TransformBall = new TransformGroup(Transform3dBall);
         Transform3dBallMove = new Transform3D();
         TransformBall.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);  
@@ -542,78 +552,230 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
         if (e.getKeyCode()==KeyEvent.VK_LEFT) {klawisz_left=false;}
         if (e.getKeyCode()==KeyEvent.VK_RIGHT) {klawisz_right=false;}
     }
+    
+   public void zerowanie(){
+            Transform3dBall.set(new Vector3f(1.5f,0.10f,1.5f));
+            TransformBall.setTransform(Transform3dBall);
+            Rotation1=1;
+            Rotation2=1;
+            Rotation3=1;   
+            Rotation4=1;
+            Rotation5=1;
+            Move6=0.3f;
+            GripLocked=false;
+            CollisionDetected=false;
+            BallGrabbed= 0;
+            BallFall=0;
+            
+   } 
 
     @Override
    public void actionPerformed(ActionEvent e) {
         Collision();
         GrabBall();
         MoveBall();
+        
+        // ustawienie robota w pozycji początkowej
+        if(e.getSource() == pozPoczatkowa){
+            zerowanie();
+        }
+        
+        if(e.getSource() == naukaPocz){
+            zerowanie();
+            recording=true;
+            steps = new int[100000]; 
+            steps[0] = 0;
+            steps_counter = 0;
+        }
+        
+        if(e.getSource() == naukaKon){
+            recording=false;
+        }
+        
+        if(e.getSource() == odtwarzaj){
+            playing=true;
+            zerowanie();
+            steps_count=steps_counter;
+            steps_counter=1;
+        }
+        
+        if(playing || (steps_counter < steps_count)){
+            if(steps[steps_counter]==0){Rotation1=Rotation1;}
+            if(steps[steps_counter]==1){Rotation1=Rotation1-0.03;}
+            if(steps[steps_counter]==2){Rotation1=Rotation1+0.03;}
+            if(steps[steps_counter]==3){Rotation2=Rotation2-0.03;}
+            if(steps[steps_counter]==4){Rotation2=Rotation2+0.03;}
+            if(steps[steps_counter]==5){Rotation3=Rotation3-0.03;}
+            if(steps[steps_counter]==6){Rotation3=Rotation3+0.03;}
+            if(steps[steps_counter]==7){Rotation4=Rotation4-0.03;}
+            if(steps[steps_counter]==8){Rotation4=Rotation4+0.03;}
+            if(steps[steps_counter]==9){Rotation5=Rotation5-0.03;}
+            if(steps[steps_counter]==10){Rotation5=Rotation5+0.03;}
+            if(steps[steps_counter]==11){Move6=Move6-0.03f;}
+            if(steps[steps_counter]==12){Move6=Move6+0.03f;}
+            steps_counter++;
+        }
+        
+
         // 1 stopień
-        if(Rotation1 > -2.65){
-                if(klawisz_9==true){Rotation1=Rotation1-0.03;}
+        if(Rotation1 > -7.65){
+                if(klawisz_9==true)
+                    {
+                        Rotation1=Rotation1-0.03;
+                        if(recording){
+                            steps_counter++;
+                            steps[steps_counter] = 1;
+                            waiting=true;
+                        }
+                    }
             }
         if(Rotation1 < 2.65){
-                if(klawisz_7==true){Rotation1=Rotation1+0.03;}
+                if(klawisz_7==true){
+                    Rotation1=Rotation1+0.03;
+                    if(recording){
+                        steps_counter++;
+                        steps[steps_counter] = 2;
+                        waiting=true;
+                    }    
+                }
             }
         // 2 Stopień
-        if(Rotation2 > 0.2){
-                if(klawisz_4==true){Rotation2=Rotation2-0.03;}
+       if(Rotation2 > 0.2){
+                if(klawisz_4==true){
+                    Rotation2=Rotation2-0.03;
+                    if(recording){
+                            steps_counter++;
+                            steps[steps_counter] = 3;
+                            waiting=true;
+                        }
+                }
             }
         if(Rotation2 < 1.6){
-                if(klawisz_1==true){Rotation2=Rotation2+0.03;}
+                if(klawisz_1==true){
+                    Rotation2=Rotation2+0.03;
+                    if(recording){
+                            steps_counter++;
+                            steps[steps_counter] = 4;
+                            waiting=true;
+                        }
+                }
             }
         // 3 Stopień
         if(Rotation3 > -1.0){
-                if(klawisz_5==true){Rotation3=Rotation3-0.03;}
+                if(klawisz_5==true){
+                    Rotation3=Rotation3-0.03;
+                    if(recording){
+                            steps_counter++;
+                            steps[steps_counter] = 5;
+                            waiting=true;
+                        }
+                }
             }
         if(Rotation3 < 1.7){
-                if(klawisz_2==true){Rotation3=Rotation3+0.03;}
+                if(klawisz_2==true){
+                    Rotation3=Rotation3+0.03;
+                    if(recording){
+                            steps_counter++;
+                            steps[steps_counter] = 6;
+                            waiting=true;
+                        }
+                }
             }
         // 4 Stopień
-       if(Rotation4 > -1){
-                if(klawisz_up==true){Rotation4=Rotation4-0.03;}
+        if(Rotation4 > -1){
+                if(klawisz_up==true){
+                    Rotation4=Rotation4-0.03;
+                    if(recording){
+                            steps_counter++;
+                            steps[steps_counter] = 7;
+                            waiting=true;
+                        }
+                }
             }
         if(Rotation4 < 1){
-                if(klawisz_down==true){Rotation4=Rotation4+0.03;}
+                if(klawisz_down==true){
+                    Rotation4=Rotation4+0.03;
+                    if(recording){
+                            steps_counter++;
+                            steps[steps_counter] = 8;
+                            waiting=true;
+                        }
+                }
             }
        // 5Stopień
-       if(Rotation5 > -1){
-                if(klawisz_left==true){Rotation5=Rotation5-0.03;}
+        if(Rotation5 > -1){
+                if(klawisz_left==true){
+                    Rotation5=Rotation5-0.03;
+                    if(recording){
+                            steps_counter++;
+                            steps[steps_counter] = 9;
+                            waiting=true;
+                        }
+                }
             }
-       if(Rotation5 < 1){
-                if(klawisz_right==true){Rotation5=Rotation5+0.03;}
+        if(Rotation5 < 1){
+                if(klawisz_right==true){
+                    Rotation5=Rotation5+0.03;
+                    if(recording){
+                            steps_counter++;
+                            steps[steps_counter] = 10;
+                            waiting=true;
+                        }
+                }
             }
         // Chwytak
         if(Move6 > 0.28){
                 if(klawisz_6==true){
-                    Move6=Move6-0.03f;}
+                    Move6=Move6-0.03f;
+                    if(recording){
+                            steps_counter++;
+                            steps[steps_counter] = 11;
+                            waiting=true;
+                        }
+                }
             }
         if(Move6 < 0.32){
-                if(klawisz_3==true){Move6=Move6+0.03f;}
+                if(klawisz_3==true){
+                    Move6=Move6+0.03f;
+                    if(recording){
+                            steps_counter++;
+                            steps[steps_counter] = 12;
+                            waiting=true;
+                        }
+                }             
             }
-           Transform3d_1stPartRotation.rotY(Rotation1);
-           Transform_1stPartRotation.setTransform(Transform3d_1stPartRotation);
-           
-           Transform3d_2ndPartRotation.rotX(Rotation2);
-           Transform_2ndPartRotation.setTransform(Transform3d_2ndPartRotation);
-           
-           Transform3d_3rdPartRotation.rotX(Rotation3);
-           Transform_3rdPartRotation.setTransform(Transform3d_3rdPartRotation);
+        if(recording && !waiting)
+                {
+                steps[steps_counter]=0;
+                steps_counter++;  
+                }
         
-           Transform3d_4thPartRotationX.rotX(Rotation4);
-           Transform3d_4thPartRotationZ.rotZ(Rotation5);
-           Transform_4thPartRotationX.setTransform(Transform3d_4thPartRotationX);
-           Transform_4thPartRotationZ.setTransform(Transform3d_4thPartRotationZ);
+        waiting=false;
+        
+        Transform3d_1stPartRotation.rotY(Rotation1);
+        Transform_1stPartRotation.setTransform(Transform3d_1stPartRotation);
            
-           Transform3dHolder1Move.set(new Vector3f(-Move6, 0, 0));
-           TransformHolder1Move.setTransform(Transform3dHolder1Move);
-           Transform3dHolder2Move.set(new Vector3f(Move6, 0, 0));
-           TransformHolder2Move.setTransform(Transform3dHolder2Move);
-          
-           if(Move6<0.3 )
-               GripLocked=true;
-           else
-               GripLocked=false;
+        Transform3d_2ndPartRotation.rotX(Rotation2);
+        Transform_2ndPartRotation.setTransform(Transform3d_2ndPartRotation);
+           
+        Transform3d_3rdPartRotation.rotX(Rotation3);
+        Transform_3rdPartRotation.setTransform(Transform3d_3rdPartRotation);
+        
+        Transform3d_4thPartRotationX.rotX(Rotation4);
+        Transform3d_4thPartRotationZ.rotZ(Rotation5);
+        Transform_4thPartRotationX.setTransform(Transform3d_4thPartRotationX);
+        Transform_4thPartRotationZ.setTransform(Transform3d_4thPartRotationZ);
+           
+        Transform3dHolder1Move.set(new Vector3f(-Move6, 0, 0));
+        TransformHolder1Move.setTransform(Transform3dHolder1Move);
+        Transform3dHolder2Move.set(new Vector3f(Move6, 0, 0));
+        TransformHolder2Move.setTransform(Transform3dHolder2Move);
+         
+        // wpisywanie pauz
+        if(Move6<0.3 )
+            GripLocked=true;
+        else
+            GripLocked=false;
         }
     
 public void Collision(){
