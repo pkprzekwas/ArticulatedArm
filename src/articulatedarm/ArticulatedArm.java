@@ -1,4 +1,3 @@
-
 package articulatedarm;
 
 import com.sun.j3d.utils.applet.MainFrame;
@@ -566,7 +565,10 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
             CollisionDetected=false;
             BallGrabbed= 0;
             BallFall=0;
-            
+            steps_counter=0;
+            steps_count=0;
+            playing=false;
+          //  steps[0]=0;       
    } 
 
     @Override
@@ -585,7 +587,6 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
             recording=true;
             steps = new int[100000]; 
             steps[0] = 0;
-            steps_counter = 0;
         }
         
         if(e.getSource() == naukaKon){
@@ -593,8 +594,8 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
         }
         
         if(e.getSource() == odtwarzaj){
-            playing=true;
             zerowanie();
+            playing=true;
             steps_count=steps_counter;
             steps_counter=1;
         }
