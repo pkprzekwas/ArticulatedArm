@@ -190,9 +190,9 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
         
         SimpleUniverse uni = new SimpleUniverse(canvas);
                //sterowanie obserwatorem
-       orbit = new OrbitBehavior(canvas, OrbitBehavior.REVERSE_ALL|OrbitBehavior.STOP_ZOOM); //sterowanie myszką
+       orbit = new OrbitBehavior(canvas, OrbitBehavior.REVERSE_ALL|OrbitBehavior.STOP_ZOOM|OrbitBehavior.DISABLE_TRANSLATE); //sterowanie myszką
        orbit.setMinRadius(2);
-       BoundingSphere bounds = new BoundingSphere(new Point3d(0,0,0),1.0);
+       BoundingSphere bounds = new BoundingSphere(new Point3d(0,0,0),50);
        orbit.setSchedulingBounds(bounds);    
        ViewingPlatform vp = uni.getViewingPlatform();
        vp.setViewPlatformBehavior(orbit);
@@ -576,8 +576,7 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
    public void actionPerformed(ActionEvent e) {     //wykonuję się z każdym sygnałem timera
         Collision();    //wykrycie kolizji
         GrabBall();      //chwycenie piłeczki
-        MoveBall();        //przesunięcie piłeczki
-        
+    
         // ustawienie robota w pozycji początkowej
         if(e.getSource() == pozPoczatkowa){
             ResetArm();
@@ -772,7 +771,7 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
         TransformHolder1Move.setTransform(Transform3dHolder1Move);
         Transform3dHolder2Move.set(new Vector3f(Move6, 0, 0));
         TransformHolder2Move.setTransform(Transform3dHolder2Move);
-         
+             MoveBall();        //przesunięcie piłeczki
         // wpisywanie pauz
         if(Move6<0.3 )
             GripLocked=true;
@@ -788,7 +787,7 @@ public void Collision(){            //wykrycie kolizji
     Transform3D Transform3dTemp2= new Transform3D(); //pobranie z obiektu informacji o pozycji chwytaka 
     Ball.getLocalToVworld(Transform3dTemp2);
     Transform3dTemp2.get(BallPosition);
-    if (GripPosition.y<0.01)        //w przypadku kolizji z położem wymuszone jest podniesienie chwytaka do pozycji powyżej ziemi
+    if (GripPosition.y<0.03 /*|| BallPosition.y<0.01f*/)        //w przypadku kolizji z położem wymuszone jest podniesienie chwytaka do pozycji powyżej ziemi
         {
             CollisionDetected=true;
             klawisz_up=false;
