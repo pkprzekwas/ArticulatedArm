@@ -569,13 +569,20 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
             steps_counter=0;
             steps_count=0;
             playing=false;
-          //  steps[0]=0;       
+                 
    } 
 
     @Override
    public void actionPerformed(ActionEvent e) {     //wykonuję się z każdym sygnałem timera
         Collision();    //wykrycie kolizji
         GrabBall();      //chwycenie piłeczki
+        MoveBall();        //przesunięcie piłeczki
+         // wpisywanie pauz
+        if(Move6<0.3 )
+            GripLocked=true;
+        else
+            GripLocked=false;
+
     
         // ustawienie robota w pozycji początkowej
         if(e.getSource() == pozPoczatkowa){
@@ -595,9 +602,14 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
         
         if(e.getSource() == odtwarzaj){
             ResetArm();
+            if(playing)
+                System.out.print("Nagrywanie jest aktywne");
+            else
+            {
             playing=true;
             steps_count=steps_counter;
             steps_counter=1;
+            }
         }
         
         if(playing || (steps_counter < steps_count)){
@@ -771,12 +783,7 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
         TransformHolder1Move.setTransform(Transform3dHolder1Move);
         Transform3dHolder2Move.set(new Vector3f(Move6, 0, 0));
         TransformHolder2Move.setTransform(Transform3dHolder2Move);
-             MoveBall();        //przesunięcie piłeczki
-        // wpisywanie pauz
-        if(Move6<0.3 )
-            GripLocked=true;
-        else
-            GripLocked=false;
+       
         }
     
 public void Collision(){            //wykrycie kolizji 
@@ -787,7 +794,7 @@ public void Collision(){            //wykrycie kolizji
     Transform3D Transform3dTemp2= new Transform3D(); //pobranie z obiektu informacji o pozycji chwytaka 
     Ball.getLocalToVworld(Transform3dTemp2);
     Transform3dTemp2.get(BallPosition);
-    if (GripPosition.y<0.03 /*|| BallPosition.y<0.01f*/)        //w przypadku kolizji z położem wymuszone jest podniesienie chwytaka do pozycji powyżej ziemi
+    if (GripPosition.y<0.01 /*|| BallPosition.y<0.01f*/)        //w przypadku kolizji z położem wymuszone jest podniesienie chwytaka do pozycji powyżej ziemi
         {
             CollisionDetected=true;
             klawisz_up=false;
