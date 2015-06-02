@@ -22,6 +22,7 @@ import java.awt.event.KeyListener;
 import javax.media.j3d.AmbientLight;
 import javax.media.j3d.Appearance;
 import javax.media.j3d.BoundingSphere;
+import javax.media.j3d.Bounds;
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Canvas3D;
 import javax.media.j3d.ColoringAttributes;
@@ -44,35 +45,38 @@ import javax.vecmath.Vector3f;
 // * @author Patryk and Kuba
  */
 public class ArticulatedArm extends Applet implements ActionListener, KeyListener {
-
+//przyciski
     private final Button pozPoczatkowa         = new Button("Ustawienie poczatkowe");
     private final Button naukaPocz             = new Button("Rozpocznij naukę");
     private final Button naukaKon              = new Button("Zakończ naukę");
     private final Button odtwarzaj             = new Button("Odtwórz zapisaną trasę");
+ //Timer    
     private final Timer Timer1;
+ //Klawisze   
     private boolean klawisz_9=false, klawisz_8=false, klawisz_7=false;
     private boolean klawisz_6=false, klawisz_5=false, klawisz_4=false;
     private boolean klawisz_3=false, klawisz_2=false, klawisz_1=false;
     private boolean klawisz_up=false, klawisz_down=false, klawisz_left=false, klawisz_right=false;
-    
+ //Flagi  
     private boolean recording = false;
     private boolean playing = false;
     private boolean waiting = false;
+  //Zmienne do nagrywania ruchów
     public int[] steps;
     public int steps_counter = 0; 
     public int steps_count; 
-    
+  //Wartość rotacji obrotów dla każdego stopnia swobody
     double Rotation1=1;
     double Rotation2=1;
     double Rotation3=1;   
     double Rotation4=1;
     double Rotation5=1;
     float Move6=0.3f;
-    boolean GripLocked;
-    boolean CollisionDetected = false;
-    int BallGrabbed= 0;
-    int BallFall=0;
-    
+    boolean GripLocked; //informacja czy chwytak jest zaciśnięty
+    boolean CollisionDetected = false;  //flaga wykrycia kolizji
+    int BallGrabbed= 0; //flaga informująca czy piłeczka jest złapana
+    int BallFall=0;     //flaga informująca czy piłeczka spada
+    //Transformgrupy wszystkich elementów
     TransformGroup TransformFloor;
     TransformGroup TransformBase;
     TransformGroup Transform_1stPart;
@@ -127,30 +131,30 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
     Transform3D Transform3dBall;
     Transform3D Transform3dBallMove;
     Transform3D Transform3dEnd;
-    
-    Cylinder Floor;
+    //elementy robota
+    Cylinder Floor;     //podłogi
     Cylinder Floor1;
     Cylinder Floor2;
-    Sphere Ball;
-    Cylinder Base;
-    Cylinder _1stPart;
-    Sphere _1stConnector;
-    Cylinder _2ndPart;
-    Cylinder _2ndPartBegine;
-    Sphere _2ndConnector;
-    Cylinder _3rdPart;
-    Sphere _3rdConnector;
-    Cylinder _4thPart;
-    Box Grip;
-    Box Holder1;
-    Box Holder2;
-    Sphere End;
+    Sphere Ball;              //piłeczka
+    Cylinder Base;            //podstawka
+    Cylinder _1stPart;        //pierwszy stopień swobody
+    Sphere _1stConnector;     //pierwszy przegub
+    Cylinder _2ndPart;        //drugi stopień swobody
+    Cylinder _2ndPartBegine;  // nakładka
+    Sphere _2ndConnector;     //drugi przegub
+    Cylinder _3rdPart;        //trzeci stopień swobody
+    Sphere _3rdConnector;     //trzeci przegub
+    Cylinder _4thPart;        //czwarty stopień swobody
+    Box Grip;                 //podstawa chwytaka
+    Box Holder1;              //Palec 1
+    Box Holder2;              //palec 2
+    Sphere End;               //celownik
     
-    Vector3f GripPosition;
-    Vector3f BallPosition;
-    Vector3f GripToObjectVevtor;
+    Vector3f GripPosition;      //wektor pozycji chwytaka
+    Vector3f BallPosition;      //wektor pozycji piłeczki
+    Vector3f GripToObjectVevtor;  //wektor od kiści do piłeczki
     
-
+    OrbitBehavior orbit; //obrót kamerą
     
     ArticulatedArm(){
 
@@ -183,13 +187,12 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
         add("North", p); 
         pozPoczatkowa.addActionListener(this);
         pozPoczatkowa.addKeyListener(this);
-      
-        
         
         SimpleUniverse uni = new SimpleUniverse(canvas);
                //sterowanie obserwatorem
-       OrbitBehavior orbit = new OrbitBehavior(canvas, OrbitBehavior.REVERSE_ALL); //sterowanie myszką
-       BoundingSphere bounds = new BoundingSphere(new Point3d(0,0,0),500);
+       orbit = new OrbitBehavior(canvas, OrbitBehavior.REVERSE_ALL|OrbitBehavior.STOP_ZOOM); //sterowanie myszką
+       orbit.setMinRadius(2);
+       BoundingSphere bounds = new BoundingSphere(new Point3d(0,0,0),1.0);
        orbit.setSchedulingBounds(bounds);    
        ViewingPlatform vp = uni.getViewingPlatform();
        vp.setViewPlatformBehavior(orbit);
@@ -198,15 +201,13 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
         uni.getViewingPlatform().getViewPlatformTransform().setTransform(przesuniecie_obserwatora);
         BranchGroup mainScene = Scena(uni);
         uni.addBranchGraph(mainScene);
-        Timer1 = new Timer(20,this);  
+        Timer1 = new Timer(20,this);        //ustawienie timera
         Timer1.start();
-        GripPosition = new Vector3f();
+        GripPosition = new Vector3f();   
         BallPosition = new Vector3f();
     }
     
-    public void przyciski() {
-
-    }
+ 
     
     public BranchGroup Scena (SimpleUniverse uni){
         
@@ -552,7 +553,7 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
         if (e.getKeyCode()==KeyEvent.VK_RIGHT) {klawisz_right=false;}
     }
     
-   public void zerowanie(){
+   public void ResetArm(){          //zerowanie pozycji ramienia
             Transform3dBall.set(new Vector3f(1.5f,0.10f,1.5f));
             TransformBall.setTransform(Transform3dBall);
             Rotation1=1;
@@ -572,18 +573,18 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
    } 
 
     @Override
-   public void actionPerformed(ActionEvent e) {
-        Collision();
-        GrabBall();
-        MoveBall();
+   public void actionPerformed(ActionEvent e) {     //wykonuję się z każdym sygnałem timera
+        Collision();    //wykrycie kolizji
+        GrabBall();      //chwycenie piłeczki
+        MoveBall();        //przesunięcie piłeczki
         
         // ustawienie robota w pozycji początkowej
         if(e.getSource() == pozPoczatkowa){
-            zerowanie();
+            ResetArm();
         }
         
         if(e.getSource() == naukaPocz){
-            zerowanie();
+            ResetArm();
             recording=true;
             steps = new int[100000]; 
             steps[0] = 0;
@@ -594,7 +595,7 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
         }
         
         if(e.getSource() == odtwarzaj){
-            zerowanie();
+            ResetArm();
             playing=true;
             steps_count=steps_counter;
             steps_counter=1;
@@ -617,7 +618,7 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
             steps_counter++;
         }
         
-
+//wykonanie ruchów w zależności od wciśniętych przycisków 
         // 1 stopień
         if(Rotation1 > -7.65){
                 if(klawisz_9==true)
@@ -752,7 +753,7 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
                 }
         
         waiting=false;
-        
+        //przesunięcie odpowiednich elementów na ekranie
         Transform3d_1stPartRotation.rotY(Rotation1);
         Transform_1stPartRotation.setTransform(Transform3d_1stPartRotation);
            
@@ -779,27 +780,21 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
             GripLocked=false;
         }
     
-public void Collision(){
+public void Collision(){            //wykrycie kolizji 
     Transform3D Transform3dTemp; 
     Transform3dTemp= new Transform3D();
- End.getLocalToVworld(Transform3dTemp);
- Transform3dTemp.get(GripPosition);
- 
-        
-        Transform3D Transform3dTemp2= new Transform3D();
-        Ball.getLocalToVworld(Transform3dTemp2);
-        Transform3dTemp2.get(BallPosition);
- 
- 
- 
- 
- if (GripPosition.y<0.01)
- {
-     CollisionDetected=true;
-     klawisz_up=false;
-     klawisz_down=false;
-     klawisz_left=false;
-     klawisz_right=false;
+    End.getLocalToVworld(Transform3dTemp);
+    Transform3dTemp.get(GripPosition);      
+    Transform3D Transform3dTemp2= new Transform3D(); //pobranie z obiektu informacji o pozycji chwytaka 
+    Ball.getLocalToVworld(Transform3dTemp2);
+    Transform3dTemp2.get(BallPosition);
+    if (GripPosition.y<0.01)        //w przypadku kolizji z położem wymuszone jest podniesienie chwytaka do pozycji powyżej ziemi
+        {
+            CollisionDetected=true;
+            klawisz_up=false;
+            klawisz_down=false;
+            klawisz_left=false;
+            klawisz_right=false;
      
      if(klawisz_1)
      {
@@ -828,8 +823,10 @@ public void Collision(){
       if(GripLocked && BallGrabbed==0)
       {
         //liczenie odległości
-          float BallGripDistance;
-        
+          float BallGripDistance;       
+        //w przypadku gdy chwytak jest zaciśnięty i odległość 
+       //między chwytakiem i piłeczką jest dostatecznie mała następuję przyłączenie piłeczki do chwytaka
+       //w celu ułatwienia sterowania aby złapać piłeczkę wystarczy przejechać koło niej mając zamknięty chwytak
         Point3f _1point= new Point3f(BallPosition.getX(),BallPosition.getY(),BallPosition.getZ());
         Point3f _2point= new Point3f(GripPosition.getX(),GripPosition.getY(),GripPosition.getZ());
         BallGripDistance= _1point.distance(_2point);
@@ -842,7 +839,7 @@ public void Collision(){
       if(!GripLocked)
            BallGrabbed=0;
   }
-  public void MoveBall()
+  public void MoveBall()//przesunięcie piłeczki gdy ta podłączona jest do chwytaka lub spada
   {
       if(BallGrabbed==1)
       {
@@ -854,7 +851,6 @@ public void Collision(){
       {
           Vector3f temp = new Vector3f();
           temp.add(GripPosition);
-          //temp.add(GripToObjectVevtor);
           Transform3dBall.set(temp);
           TransformBall.setTransform(Transform3dBall);
       }
