@@ -202,7 +202,7 @@ public class ArticulatedArm extends Applet implements ActionListener, KeyListene
         BranchGroup mainScene = Scena(uni);
         uni.addBranchGraph(mainScene);
         Timer1 = new Timer(20, this);        //ustawienie timera
-//        Timer1.start();             //start timera
+        Timer1.start();             //start timera
         GripPosition = new Vector3f();  //tworzenie wektora pozycji kiści
         BallPosition = new Vector3f();  //tworzenie wektora pozycji piłeczki
     }
